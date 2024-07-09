@@ -1,0 +1,42 @@
+import numpy as np
+
+
+# Query: Add 5 and 3.
+result = 5 + 3
+print(f"Addition: 5 + 3 = {result}")
+# done
+
+# Query: Subtract 7 from 10.
+result = 10 - 7
+print(f"Subtraction: 10 - 7 = {result}")
+# done
+
+# Query: Multiply 4 by 6.
+result = 4 * 6
+print(f"Multiplication: 4 * 6 = {result}")
+# done
+
+# Query: Divide 20 by 4.
+result = 20 / 4
+print(f"Division: 20 / 4 = {result}")
+# done
+
+# Query: Raise 2 to the power of 3.
+result = 2 ** 3
+print(f"Exponentiation: 2^3 = {result}")
+# done
+
+# Query: Find the square root of 16.
+result = np.sqrt(16)
+print(f"Square Root: sqrt(16) = {result}")
+# done
+
+# Query: Find the remainder when 10 is divided by 3.
+result = 10 % 3
+print(f"Modulus: 10 % 3 = {result}")
+# done
+
+# Query: Find the absolute value of -5.
+result = abs(-5)
+print(f"Absolute Value: abs(-5) = {result}")
+# done

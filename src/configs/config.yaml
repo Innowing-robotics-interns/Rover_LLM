@@ -1,0 +1,26 @@
+lmp_config:
+  env:
+    map_size: 100
+    num_waypoints_per_plan: 10000  # set to a large number since we only do open loop for sim
+    max_plan_iter: 1
+    visualize: True
+  lmps:
+    coder:
+      name: 'code_llm'
+      model: 'llama3-8B-instruct-official-fineTuned'
+      adapter:  # leave empty if no adapter is used
+      max_new_tokens: 512
+      # sys_prompts: 'sys_prompt.txt'
+      # user_prompts: 'user_prompt.txt'
+      load_in_4bit: True
+      # use_cuda: True
+      # max_gen_length: 100
+
+      #test
+      sys_prompts: 'test_sys.txt'
+      user_prompts: 'test_user.txt'
+
+    planer:
+      name: 'plan_llm'
+      model: 'llama3-8B-instruct-official-fineTuned'
+      adapter:  # leave empty if no adapter is used
