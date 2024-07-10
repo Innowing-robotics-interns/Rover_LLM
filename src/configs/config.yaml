@@ -5,22 +5,35 @@ lmp_config:
     max_plan_iter: 1
     visualize: True
   lmps:
-    coder:
-      name: 'code_llm'
+    coder: # high-level interpreter
+      name: 'coder'
       model: 'llama3-8B-instruct-official-fineTuned'
       adapter:  # leave empty if no adapter is used
       max_new_tokens: 512
-      # sys_prompts: 'sys_prompt.txt'
-      # user_prompts: 'user_prompt.txt'
+      sys_prompts: 'coder_sys_prompt.txt'
+      user_prompts: 'coder_user_prompt.txt'
       load_in_4bit: True
       # use_cuda: True
       # max_gen_length: 100
 
       #test
-      sys_prompts: 'test_sys.txt'
-      user_prompts: 'test_user.txt'
+      # sys_prompts: 'test_sys.txt'
+      # user_prompts: 'test_user.txt'
 
-    planer:
-      name: 'plan_llm'
+    planner: # low-level planner
+      name: 'planner'
       model: 'llama3-8B-instruct-official-fineTuned'
       adapter:  # leave empty if no adapter is used
+      max_new_tokens: 512
+      load_in_4bit: True
+      sys_prompts: 'planner_sys_prompt.txt'
+      user_prompts: 'planner_user_prompt.txt'
+    
+    # executor: # low-level executor
+    #   name: 'executor'
+    #   model: 'llama3-8B-instruct-official-fineTuned'
+    #   adapter:  # leave empty if no adapter is used
+    #   max_new_tokens: 512
+    #   load_in_4bit: True
+    #   sys_prompts: 'executor_sys_prompt.txt'
+    #   user_prompts: 'executor_user_prompt.txt'

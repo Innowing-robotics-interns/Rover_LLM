@@ -1,0 +1,83 @@
+import numpy as np
+{custom import}
+from utils import planner
+
+
+# Query: can you go to Event Hall?
+planner("MoveTo Event Hall")
+# done
+
+
+# Query: please take me to Makerspace A.
+planner("MoveTo Makerspace A")
+# done
+
+
+# Query: go to IoT zone then go to 3D printer station
+planner("MoveTo IoT zone")
+planner("MoveTo 3D printer station")
+# done
+
+
+# Query: hey, stay for 5 seconds, then go to storage room .
+planner("Delay 5 seconds")
+planner("MoveTo storage room")
+# done
+
+# Query: go to the Conference Room, wait for 10 seconds, then go to the Robotics Lab, and finally return to the Conference Room.
+planner("MoveTo Conference Room")
+planner("Delay 10 seconds")
+planner("MoveTo Robotics Lab")
+planner("MoveTo Conference Room")
+# done
+
+
+# Query: please take me to the Cafeteria, if it's occupied, go to the Library instead.
+if planner("CheckOccupancy Cafeteria") == "occupied":
+    planner("MoveTo Library")
+else:
+    planner("MoveTo Cafeteria")
+# done
+
+
+# Query: go to the Auditorium, wait for 5 seconds, then go to the Reception Area, and if the Reception Area is busy, go to the Workshop B.
+planner("MoveTo Auditorium")
+planner("Delay 5 seconds")
+if planner("CheckOccupancy Reception Area") == "busy":
+    planner("MoveTo Workshop B")
+else:
+    planner("MoveTo Reception Area")
+# done
+
+
+# Query: hey, go to the VR zone, then to the AR station, wait for 3 seconds, and finally go to the Maintenance Room.
+planner("MoveTo VR zone")
+planner("MoveTo AR station")
+planner("Delay 3 seconds")
+planner("MoveTo Maintenance Room")
+# done
+
+
+# Query: can you go to the Event Hall, if it's not available, wait for 5 seconds and try again, repeat this until it's available.
+while planner("CheckOccupancy Event Hall") == "not available":
+    planner("Delay 5 seconds")
+planner("MoveTo Event Hall")
+# done
+
+
+# Query: please take me to the Makerspace A, then to the IoT zone, wait for 2 seconds, and finally go to the 3D printer station.
+planner("MoveTo Makerspace A")
+planner("MoveTo IoT zone")
+planner("Delay 2 seconds")
+planner("MoveTo 3D printer station")
+# done
+
+
+# Query: go to the storage room, if it's locked, go to the Reception Area and get the key, then return to the storage room.
+if planner("CheckLock storage room") == "locked":
+    planner("MoveTo Reception Area")
+    planner("GetKey storage room")
+    planner("MoveTo storage room")
+else:
+    planner("MoveTo storage room")
+# done

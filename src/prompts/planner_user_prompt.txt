@@ -1,0 +1,32 @@
+import numpy as np
+{custom import}
+
+# Query: MoveTo Event Hall
+print(f"moblie('Dest', 'Event Hall')")
+# done
+
+
+# Query: MoveTo Makerspace A
+print(f"moblie('Dest', 'Makerspace A')")
+# done
+
+
+# Query: Delay 5 seconds
+print(f"moblie('Delay', 5000)")
+# done
+
+# Query: Delay 1.5 seconds
+print(f"moblie('Delay', 1500)")
+# done
+
+# Query: CheckOccupancy Cafeteria
+print(f"perception('isOccupant', "Cafeteria")")
+# done
+
+# Query: CheckOccupancy Reception Area
+print(f"perception('isOccupant', "Reception Area")")
+# done
+
+# Query: GetKey storage room
+print(f"perception('objHolding', "key", "sotrage room"))
+# done

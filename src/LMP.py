@@ -6,13 +6,14 @@ from utils import get_path, load_prompt
 
 
 class LMP:
-    def __init__(self, name, cfg, fixed_vars=None, variable_vars=None):
+    def __init__(self, name, cfg, fixed_vars={}, variable_vars={}):
         self.name = name
         self.cfg = cfg
         self.model = None
         self.tokenizer = None
         self.fixed_vars = fixed_vars
         self.variable_vars = variable_vars
+        self.load_model()
     
     
     def config(self):
@@ -23,10 +24,16 @@ class LMP:
     
     
     def format_chat_template(self, prompt, document=None):
-        # user1 = f"I would like you to help me write Python code to control a robot arm operating in a tabletop environment. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{self.user_prompts}\n```\n\nNote that x is back to front, y is left to right, and z is bottom to up."
-        user1 = f"I would like you to help me write Python code to conduct simple algebra. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{self.user_prompts}\n```\n\n"
+        if (self.variable_vars is None):
+            custom_import = ''
+        else:
+            custom_import = f"from LLM_lib import {', '.join(self.variable_vars.keys())}"
+        self.user_prompts = self.user_prompts.replace('{custom_import}', custom_import)
+        
+        user1 = f"I would like you to help me write Python code to control a robot navigation operating in indoor environment. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{self.user_prompts}\n```\n\nNote that x is back to front, y is left to right, and z is bottom to up."
         assistant1 = f'Got it. I will complete what you give me next.'
         # prompt = "Command: " + prompt
+        prompt = f'Query: {prompt}'
         messages = [
             {"role": "system", "content": self.sys_prompts},
             {"role": "user",   "content": user1},
@@ -54,22 +61,23 @@ class LMP:
         # pattern = r'assistant(.*?)# done' # depends on the prompt
         pattern = r'assistant\n(.*)'
         matches = re.findall(pattern, result, re.DOTALL)
-        print("="*80)
-        print(result)
-        print("="*80)
-        print(matches[-1])
-        print("="*80)
+        # print("="*80)
+        # print(result)
+        # print("="*80)
+        # print(matches[-1])
+        # print("="*80)
         final = re.findall(r'assistant(.*)', matches[-1], re.DOTALL)[-1] + "# done"
         print(final)
         print(type(final))
         print("="*80)
         if not final:
             return None
-        gvars = {}
+        # execute the code
+        gvars = self.fixed_vars | self.variable_vars
         lvars = {}
         success = safe_to_run(final,gvars, lvars)
-        if success: #and self.cfg['save_output']:
-            print(lvars['result'])
+        # if success: #and self.cfg['save_output']:
+        #     print(lvars['result'])
         
         return final, success
     
@@ -110,6 +118,9 @@ class LMP:
         self.model = finetuned_model
         return
     
+    def __call__(self, prompt):
+        input_text = self.format_chat_template(prompt)
+        return self.generate(input_text)
     
 # execute module
 def safe_to_run(code, gvars=None, lvars=None):

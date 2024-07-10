@@ -1,4 +1,5 @@
 import numpy as np
+{custom import}
 
 
 # Query: Add 5 and 3.
@@ -40,3 +41,6 @@ print(f"Modulus: 10 % 3 = {result}")
 result = abs(-5)
 print(f"Absolute Value: abs(-5) = {result}")
 # done
+
+
+user1 = f"I would like you to help me write Python code to conduct simple algebra. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{self.user_prompts}\n```\n\n"
