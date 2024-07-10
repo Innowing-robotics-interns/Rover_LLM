@@ -1,2 +1,4 @@
 **/models/*
+!**/models/README.md
 **/adapters/*
+!**/adapters/README.md
