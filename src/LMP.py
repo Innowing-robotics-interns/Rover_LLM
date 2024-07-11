@@ -30,7 +30,8 @@ class LMP:
             custom_import = f"from LLM_lib import {', '.join(self.variable_vars.keys())}"
         self.user_prompts = self.user_prompts.replace('{custom_import}', custom_import)
         
-        user1 = f"I would like you to help me write Python code to control a robot navigation operating in indoor environment. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{self.user_prompts}\n```\n\nNote that x is back to front, y is left to right, and z is bottom to up."
+        # user1 = f"I would like you to help me write Python code to control a robot navigation operating in indoor environment. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{self.user_prompts}\n```\n\nNote that x is back to front, y is left to right, and z is bottom to up."
+        user1 = f"I would like you to help me write Python code to control a robot arm operating in a tabletop environment. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{self.user_prompts}\n```\n\nNote that x is back to front, y is left to right, and z is bottom to up." 
         assistant1 = f'Got it. I will complete what you give me next.'
         # prompt = "Command: " + prompt
         prompt = f'Query: {prompt}'
@@ -124,7 +125,7 @@ class LMP:
     
 # execute module
 def safe_to_run(code, gvars=None, lvars=None):
-    forbidden = ['import','__','exec','eval']
+    forbidden = ['import','__','exec(','eval']
     for word in forbidden:
         assert word not in code, f'forbidden word "{word}" in code'
     if gvars is None:
@@ -137,5 +138,4 @@ def safe_to_run(code, gvars=None, lvars=None):
     except Exception as e:
         print(f'Error codes: {e}')
         return False
-        
         

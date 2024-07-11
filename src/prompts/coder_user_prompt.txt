@@ -1,6 +1,6 @@
 import numpy as np
 {custom import}
-from utils import planner
+from utils import planner, arm
 
 
 # Query: can you go to Event Hall?
@@ -80,4 +80,62 @@ if planner("CheckLock storage room") == "locked":
     planner("MoveTo storage room")
 else:
     planner("MoveTo storage room")
+# done
+
+# Query: homing
+planner("MoveTo Home")
+arm("Ready")
+arm("Home")
+# done
+
+# Query: shutdown
+planner("Shutdown")
+arm("Shutdown")
+# done
+
+# Query: Move the arm to (1.0,3.2,0.3)
+arm("Ready")
+arm("MoveTo x='1.0', y='3.2', z='0.3'")
+# done
+
+# Query: arm go to point (0.7,0.4,1.1)
+arm("Ready")
+arm("MoveTo x='0.7', y='0.4', z='1.1'")
+# done
+
+# Query: arm take specific pose (0.5,1.0,0.3, 0.0,0.0821,0.0,0.99021)
+arm("Ready")
+arm("Pose x='0.5', y='1.0', z='0.3', ox='0.0', oy='0.0821', oz='0.0', ow='0.99021'")
+# done
+
+# Query: arm go to absolute pose (1.0,0.5,1.3, 0.2221,0.0152,0.5024,0.41)
+arm("Ready")
+arm("Pose x='1.0', y='0.5', z='1.3', ox='0.2221', oy='0.0152', oz='0.5024', ow='0.41'")
+# done
+
+# Query: arm go up a little bit
+arm("Ready")
+arm("Increment_xyz x='0.0', y='0.0', z='0.1'")
+# done
+
+# Query: arm move backward by a small distance
+arm("Ready")
+arm("Increment_xyz x='-0.1', y='0.0', z='0.0'")
+# done
+
+# Query: arm lower a small angle of the pitch angle 
+arm("Ready")
+arm("Increment_rpy r='0.0', p='-0.1', y='0.0'")
+# done
+
+# Query: arm go forward a bit and rotate clockwise for a small angle in yaw-axis
+arm("Ready")
+arm("Increment_xyz x='0.1', y='0.0', z='0.0'")
+arm("Increment_rpy r='0.0', p='0.0', y='0.1'")
+# done
+
+# Query: arm go up by a small distance and rotate anti-clockwise for a small angle in yaww-axis
+arm("Ready")
+arm("Increment_xyz x='0.0', y='0.0', z='0.1'")
+arm("Increment_rpy r='0.0', p='0.0', y='-0.1'")
 # done
