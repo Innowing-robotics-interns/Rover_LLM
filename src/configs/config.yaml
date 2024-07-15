@@ -12,7 +12,7 @@ lmp_config:
       max_new_tokens: 512
       sys_prompts: 'coder_sys_prompt.txt'
       user_prompts: 'coder_user_prompt.txt'
-      load_in_4bit: True
+      load_in_4bit: False
       # use_cuda: True
       # max_gen_length: 100
 

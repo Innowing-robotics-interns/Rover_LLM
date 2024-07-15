@@ -29,11 +29,13 @@ def main():
     # input_text = f'what is the sum of 2 and 3?'
     # input_text = f'can you go to the 3D printer station and get the key for Event Hall, then go to the Event Hall and unlock the door?'
     # input_text = f'arm move to (1.2,1.0,0.7), then go left by a small distance, finally rotate in pitch-axis by a small angle.'
-    input_text = f'arm move to (1.2,1.0,0.7), then move backward a bit, finally rotate a little in yaw-axis.'
-    success = False
-    while not success:
-        result, success=coder(input_text)
-        print(result)
+    input_text = f'arm move to (1.2,1.0,0.7), then move to right for a bit, finally rotate a little in roll-axis.'
+    while True:
+      input_text = input(">>Prompt:")
+      success = False
+      while not success:
+          result, success=coder(input_text)
+          print(result)
     
     
 

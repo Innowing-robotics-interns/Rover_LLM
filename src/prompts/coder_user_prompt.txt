@@ -134,7 +134,7 @@ arm("Increment_xyz x='0.1', y='0.0', z='0.0'")
 arm("Increment_rpy r='0.0', p='0.0', y='0.1'")
 # done
 
-# Query: arm go up by a small distance and rotate anti-clockwise for a small angle in yaww-axis
+# Query: arm go up by a small distance and rotate anti-clockwise for a small angle in yaw-axis
 arm("Ready")
 arm("Increment_xyz x='0.0', y='0.0', z='0.1'")
 arm("Increment_rpy r='0.0', p='0.0', y='-0.1'")
