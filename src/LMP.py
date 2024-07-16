@@ -21,6 +21,7 @@ class LMP:
         self.adapter_id = get_path(self.cfg['adapter'])
         self.sys_prompts = load_prompt(self.cfg['sys_prompts'])
         self.user_prompts = load_prompt(self.cfg['user_prompts'])
+        
     
     
     def format_chat_template(self, prompt, document=None):
@@ -52,33 +53,47 @@ class LMP:
         return input_ids
     
     
+    def code_formatting(self, code):
+        code_prefix = f"import {', '.join(self.fixed_vars.keys())}"+ f"\ncommands = ['source ~/interbotix_ws/install/setup.bash', '''{code}''']\n"
+        code_suffix = f"for command in commands:\n\tresult = subprocess.run(command, shell=True, executable='/bin/bash', capture_output=True, text=True)"
+        return code_prefix + code_suffix
+
+
     def generate(self, input_ids):
-        self.model.eval()
-        with torch.no_grad():
-            result = self.tokenizer.decode(self.model.generate(inputs=input_ids, max_new_tokens=self.cfg['max_new_tokens'], pad_token_id=self.tokenizer.eos_token_id)[0], skip_special_tokens=True)
-            # result = self.tokenizer.decode(self.model.generate(**input_ids, max_new_tokens=1000, pad_token_id=self.tokenizer.eos_token_id)[0], skip_special_tokens=True)
-        
-        # Define regular expression pattern to extract the behavior tree from the complete output
-        # pattern = r'assistant(.*?)# done' # depends on the prompt
-        pattern = r'assistant\n(.*)'
-        matches = re.findall(pattern, result, re.DOTALL)
-        # print("="*80)
-        # print(result)
-        # print("="*80)
-        # print(matches[-1])
-        # print("="*80)
-        final = re.findall(r'assistant(.*)', matches[-1], re.DOTALL)[-1] + "# done"
-        print(final)
-        print(type(final))
-        print("="*80)
-        if not final:
-            return None
-        # execute the code
-        gvars = self.fixed_vars | self.variable_vars
-        lvars = {}
-        success = safe_to_run(final,gvars, lvars)
-        # if success: #and self.cfg['save_output']:
-        #     print(lvars['result'])
+        try:
+            self.model.eval()
+            with torch.no_grad():
+                result = self.tokenizer.decode(self.model.generate(inputs=input_ids, max_new_tokens=self.cfg['max_new_tokens'], pad_token_id=self.tokenizer.eos_token_id)[0], skip_special_tokens=True)
+                # result = self.tokenizer.decode(self.model.generate(**input_ids, max_new_tokens=1000, pad_token_id=self.tokenizer.eos_token_id)[0], skip_special_tokens=True)
+            
+            # Define regular expression pattern to extract the behavior tree from the complete output
+            # pattern = r'assistant(.*?)# done' # depends on the prompt
+            pattern = r'assistant\n(.*)'
+            matches = re.findall(pattern, result, re.DOTALL)
+            # print("="*80)
+            # print(result)
+            # print("="*80)
+            # print(matches[-1])
+            # print("="*80)
+            final = re.findall(r'assistant(.*)', matches[-1], re.DOTALL)[-1]
+            print(final)
+            print(type(final))
+            print("="*80)
+            if not final:
+                return None
+            # execute the code
+            gvars = self.fixed_vars | self.variable_vars
+            lvars = {}
+            if self.cfg['heirarchy'] == 'low': # lower level LLM
+                code = self.code_formatting(final)
+            else :
+                code = final
+            success = safe_to_run(code, gvars, lvars)
+            # if success: #and self.cfg['save_output']:
+            #     print(lvars['result'])
+        except KeyboardInterrupt:
+            print("KeyboardInterrupt")
+            return None, True
         
         return final, success
     
@@ -125,7 +140,7 @@ class LMP:
     
 # execute module
 def safe_to_run(code, gvars=None, lvars=None):
-    forbidden = ['import','__','exec(','eval']
+    forbidden = ['__','exec(','eval']
     for word in forbidden:
         assert word not in code, f'forbidden word "{word}" in code'
     if gvars is None:
@@ -133,9 +148,10 @@ def safe_to_run(code, gvars=None, lvars=None):
     if lvars is None:
         lvars = {}
     try:
+        print(code)
         exec(code, gvars, lvars)
         return True
     except Exception as e:
         print(f'Error codes: {e}')
         return False
-        
+    

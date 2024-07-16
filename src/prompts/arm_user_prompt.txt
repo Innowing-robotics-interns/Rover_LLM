@@ -2,135 +2,79 @@ import subprocess
 {custom import}
 
 # Query: Increment_rpy r='0.0', p='-0.1', y='0.0'
-commands = [
-    'source ~/interbotix_ws/install/setup.bash',
-    '''ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand '{
-        "cmd_type": "Increment rpy",
-        "rpy": [0.0, -0.1, 0.0]
-    }' --once'''.toString()
-]
-for command in commands:
-    result = subprocess.run(command, shell=True, executable='/bin/bash', capture_output=True, text=True)
-    print(result.stdout)
-    print(result.stderr)
+ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand '{
+    "cmd_type": "Increment rpy",
+    "rpy": [0.0, -0.1, 0.0]
+}' --once
 # done
 
 
 # Query: Pose x='1.0', y='0.5', z='1.3', ox='0.2221', oy='0.0152', oz='0.5024', ow='0.41'
-commands=[
-    'source ~/interbotix_ws/install/setup.bash',
-    '''ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand '{
-        "cmd_type": "Absolute pose",
-        "pose": {
-            "position": {
-                "x":1.0,
-                "y":0.5,
-                "z":1.3
-            },
-            "orientation": {
-                "x":0.2221,
-                "y":0.0152,
-                "z":0.5024,
-                "w":0.41
-            }
+ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand '{
+    "cmd_type": "Absolute pose",
+    "pose": {
+        "position": {
+            "x":1.0,
+            "y":0.5,
+            "z":1.3
+        },
+        "orientation": {
+            "x":0.2221,
+            "y":0.0152,
+            "z":0.5024,
+            "w":0.41
         }
-    }' --once'''.toString()
-]
-for command in commands:
-    result = subprocess.run(command, shell=True, executable='/bin/bash', capture_output=True, text=True)
-    print(result.stdout)
-    print(result.stderr)
+    }
+}' --once
 # done
 
 
 # Query: MoveTo x='0.7', y='0.4', z='1.1'
-commands=[
-    'source ~/interbotix_ws/install/setup.bash',
-    '''ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand '{
-        "cmd_type": "Absolute xyz",
-        "point": {
-            "x":0.7,
-            "y":0.4,
-            "z":1.1
-        }
-    }' --once'''.toString()
-]
-for command in commands:
-    result = subprocess.run(command, shell=True, executable='/bin/bash', capture_output=True, text=True)
-    print(result.stdout)
-    print(result.stderr)
+ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand '{
+    "cmd_type": "Absolute xyz",
+    "point": {
+        "x":0.7,
+        "y":0.4,
+        "z":1.1
+    }
+}' --once
 # done
 
 
 # Query: Home
-commands=[
-    'source ~/interbotix_ws/install/setup.bash',
-    '''ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand "{
-        cmd_type: "Home"
-    }" --once'''.toString()
-]
-for command in commands:
-    result = subprocess.run(command, shell=True, executable='/bin/bash', capture_output=True, text=True)
-    print(result.stdout)
-    print(result.stderr)
+ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand "{
+    cmd_type: "Home"
+}" --once
 # done
 
 
 # Query: Increment_xyz x='0.0', y='0.0', z='0.1'
-commands=[
-    'source ~/interbotix_ws/install/setup.bash',
-    '''ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand '{
-        "cmd_type": "Increment xyz",
-        "point": {
-            "x":0.0,
-            "y":0.0,
-            "z":0.1
-        }
-    }' --once'''.toString()
-]
-for command in commands:
-    result = subprocess.run(command, shell=True, executable='/bin/bash', capture_output=True, text=True)
-    print(result.stdout)
-    print(result.stderr)
+ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand '{
+    "cmd_type": "Increment xyz",
+    "point": {
+        "x":0.0,
+        "y":0.0,
+        "z":0.1
+    }
+}' --once
 # done
 
 
 # Query: Ready
-commands=[
-    'source ~/interbotix_ws/install/setup.bash',
-    '''ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand "{
-        cmd_type: "Ready"
-    }" --once'''.toString()
-]
-for command in commands:
-    result = subprocess.run(command, shell=True, executable='/bin/bash', capture_output=True, text=True)
-    print(result.stdout)
-    print(result.stderr)
+ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand "{
+    cmd_type: "Ready"
+}" --once
 # done
 
 
 # Query: Shutdown
-commands=[
-    'source ~/interbotix_ws/install/setup.bash',
-    '''ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand "{
-        cmd_type: "Shutdown"
-    }" --once'''.toString()
-]
-for command in commands:
-    result = subprocess.run(command, shell=True, executable='/bin/bash', capture_output=True, text=True)
-    print(result.stdout)
-    print(result.stderr)
+ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand "{
+    cmd_type: "Shutdown"
+}" --once
 # done
 
 # Query: Sleep
-commands=[
-    'source ~/interbotix_ws/install/setup.bash',
-    '''ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand "{
-        cmd_type: "Sleep"
-    }" --once'''.toString()
-]
-for command in commands:
-    result = subprocess.run(command, shell=True, executable='/bin/bash', capture_output=True, text=True)
-    print(result.stdout)
-    print(result.stderr)
+ros2 topic pub /master_control/command widowx_msg/msg/WidowXCommand "{
+    cmd_type: "Sleep"
+}" --once
 # done

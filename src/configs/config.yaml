@@ -7,6 +7,7 @@ lmp_config:
   lmps:
     coder: # high-level interpreter
       name: 'coder'
+      heirarchy: 'high'
       model: 'llama3-8B-instruct-official-fineTuned'
       adapter:  # leave empty if no adapter is used
       max_new_tokens: 512
@@ -22,6 +23,7 @@ lmp_config:
 
     planner: # low-level planner
       name: 'planner'
+      heirarchy: 'low'
       model: 'llama3-8B-instruct-official-fineTuned'
       adapter:  # leave empty if no adapter is used
       max_new_tokens: 512
@@ -31,9 +33,19 @@ lmp_config:
     
     arm: # low-level executor
       name: 'arm'
+      heirarchy: 'low'
       model: 'llama3-8B-instruct-official-fineTuned'
       adapter:  # leave empty if no adapter is used
       max_new_tokens: 512
       load_in_4bit: True
       sys_prompts: 'arm_sys_prompt.txt'
       user_prompts: 'arm_user_prompt.txt'
+    
+    # test:
+    #   name: 'test'
+    #   model: 'llama3-8B-instruct-official-fineTuned'
+    #   adapter:  # leave empty if no adapter is used
+    #   max_new_tokens: 512
+    #   load_in_4bit: True
+    #   sys_prompts: 'test_sys_prompt.txt'
+    #   user_prompts: 'test_user_prompt.txt'
