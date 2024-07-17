@@ -1,0 +1,29 @@
+import numpy as np
+{custom import}
+
+
+
+# Query: stop
+ros2 topic pub /turtle1/cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}" --once 
+# done
+
+
+# Query: clear
+ros2 service call /clear std_srvs/srv/Empty
+# done
+
+
+# Query: MoveDelta 'linear= x: 0.35, y: 0.35, z: 0.0'
+ros2 topic pub /turtle1/cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.35, y: 0.35, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}" --once
+# done
+
+
+# Query: Circular 'linear= x: 2.0, y: 0.0, z: 0.0', 'angular= x: 0.0, y: 0.0, z: 1.8'
+ros2 topic pub /turtle1/cmd_vel geometry_msgs/msg/Twist "{linear: {x: 2.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 1.8}}" --once
+# done
+
+
+# Query: Delay 3 seconds
+time.sleep(3)
+# done
+

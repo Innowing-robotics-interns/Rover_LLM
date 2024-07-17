@@ -1,8 +1,59 @@
 import numpy as np
+import time
 {custom import}
 
 
-# Query: Add 5 and 3.
+# a square is going in all 4 directions in order with the same distance
+
+# Query: stop
+planner("stop")
+# done
+
+# Query: move left
+planner("MoveDelta 'linear= x: 0.0, y: 1.0, z: 0.0")
+# done
 
 
-user1 = f"I would like you to help me write Python code to conduct simple algebra. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{self.user_prompts}\n```\n\n"
+# Query: move forward a bit
+planner("MoveDelta 'linear= x: 1.0, y: 0.0, z: 0.0")
+# done
+
+
+# Query: move forward-left by a little
+planner("MoveDelta 'linear= x: 0.7, y: 0.7, z: 0.0")
+# done
+
+
+# Query: move to right for a large step
+planner("MoveDelta 'linear= x: 0.0, y: -2.0, z: 0.0")
+# done
+
+
+# Query: move backward-right for a large distance
+planner("MoveDelta 'linear= x: -1.4, y: -1.4, z: 0.0")
+# done
+
+
+# Query: draw a part of circle
+planner("Circular 'linear= x: 1.0, y: 0.0, z: 0.0' 'angular= x: 0.0, y: 0.0, z: 1.8'")
+# done
+
+# Query: draw a part of circle with radius 1
+# angular z = 2 / radius = 2 / 1 = 2
+planner("Circular 'linear= x: 2.0, y: 0.0, z: 0.0' 'angular= x: 0.0, y: 0.0, z: 2.0'")
+# done
+
+# Query: draw a part of circle with radius 4
+# angular z = 2 / 4 = 0.5
+planner("Circular 'linear= x: 2.0, y: 0.0, z: 0.0' 'angular= x: 0.0, y: 0.0, z: 0.5'")
+# done
+
+# Query: clear
+planner("clear")
+# done
+
+
+# Query: hey, stay for 2 seconds, then move forward a bit.
+time.sleep(2)
+planner("MoveDelta 'linear= x: 0.5, y: 0.0, z: 0.0'")
+# done
