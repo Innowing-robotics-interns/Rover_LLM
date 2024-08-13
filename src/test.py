@@ -1,5 +1,5 @@
-from LMP import LMP
-from utils import get_config
+from capllm.LMP import LMP
+from capllm.utils import get_config
 import numpy, subprocess, time
 
 import os
@@ -7,23 +7,26 @@ import openai
 from openai import AzureOpenAI
 from dotenv import load_dotenv
 
-def main():
+
+def init():
 	cfg = get_config('configs/config.yaml')['lmps']
-
-
 	fixed_vars = {'numpy':numpy, 'subprocess':subprocess, 'time': time} # for third libraries that LLM can access
 	variable_vars = {} # for first party libraries (can be other LLM) that a LLM can access
 	# allow LMPs to access other LMPs
 	# & low-level LLM setup
 	lmp_names = [name for name in cfg.keys() if not name in ['coder']] # cfg=lmps_config
 	low_level_lmps = {
-	  k: LMP(k, cfg[k], fixed_vars, variable_vars) #, debug, env_name)
-	  for k in lmp_names
+		k: LMP(k, cfg[k], fixed_vars, variable_vars) #, debug, env_name)
+		for k in lmp_names
 	}
 	variable_vars.update(low_level_lmps)
 
 	# high-level LLM setup
 	coder = LMP("coder", cfg['coder'], fixed_vars, variable_vars)
+	return coder
+
+def main():
+	model = init()
  
 	# objects = ['mouse', 'keyboard']
 	# input_text = test_llm.format_chat_template(f'{objects}\nCommand: put the mouse on the keyboard.')
@@ -34,9 +37,11 @@ def main():
 	while True:
 	# if True:
 		input_text = input("\n>>Prompt: ")
+		if input_text == 'exit':
+			break
 		success = False
 		while not success:
-			result, success=coder(input_text)
+			result, success=model(input_text)
 			print(result)
 
 # 	code = 

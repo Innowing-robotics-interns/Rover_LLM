@@ -30,10 +30,10 @@ class LMP:
             openai.api_version = os.getenv("OPENAI_API_VERSION")
         else:
             self.model_id = get_path(self.cfg['model'])
-        self.adapter_id = get_path(self.cfg['adapter'])
-        self.sys_prompts = load_prompt(self.cfg['sys_prompts'])
-        self.user_prompts = load_prompt(self.cfg['user_prompts'])
-        
+            self.adapter_id = get_path(self.cfg['adapter'])
+            self.sys_prompts = load_prompt(self.cfg['sys_prompts'])
+            self.user_prompts = load_prompt(self.cfg['user_prompts'])
+            
     
     
     def format_chat_template(self, prompt, document=None):
@@ -80,7 +80,7 @@ class LMP:
         try:
             if 'gpt' in self.cfg['model']:
                 chat_completion = openai.chat.completions.create(
-                    model="summer", # Do not edit this. model="deployment_name"
+                    model="trygpt4o", # Do not edit this. model="deployment_name"
                     messages=input_ids,
                     temperature=0.0, 
                     max_tokens=self.cfg['max_new_tokens'], 
@@ -99,7 +99,8 @@ class LMP:
                     # result = self.tokenizer.decode(self.model.generate(**input_ids, max_new_tokens=1000, pad_token_id=self.tokenizer.eos_token_id)[0], skip_special_tokens=True)
             
                 # Define regular expression pattern to extract the behavior tree from the complete output
-                # pattern = r'assistant(.*?)# done' # depends on the prompt
+                # depends on the prompt
+                # pattern = r'assistant(.*?)# done' 
                 pattern = r'assistant\n(.*)'
                 matches = re.findall(pattern, result, re.DOTALL)
                 # print("="*80)
@@ -164,7 +165,7 @@ class LMP:
                 self.model = base_model
                 return
             # Load fine-tuned model
-            finetuned_model = PeftModel.from_pretrained(base_model, self.adapter_id, device_map = {"":0},) #auto)
+            finetuned_model = PeftModel.from_pretrained(base_model, self.adapter_id, device_map = {"":0},)
             # finetuned_model = finetuned_model.merge_and_unload()
 
             device = torch.device("cuda")# if torch.cuda.is_available() else "cpu")
@@ -177,7 +178,7 @@ class LMP:
         return self.generate(input_text)
     
 # execute module
-def safe_to_run(code, gvars=None, lvars=None):
+def safe_to_run(code, gvars=None, lvars=None):    
     forbidden = ['__','exec(','eval']
     for word in forbidden:
         assert word not in code, f'forbidden word "{word}" in code'
