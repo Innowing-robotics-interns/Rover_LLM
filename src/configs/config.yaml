@@ -47,9 +47,10 @@ lmp_config:
             
         test:
             name: 'test'
+            heirarchy: 'preview'
             model: 'llama3-8B-instruct-official-fineTuned'
             adapter:  # leave empty if no adapter is used
-            max_new_tokens: 512
-            load_in_4bit: True
-            sys_prompts: 'test_sys_prompt.txt'
-            user_prompts: 'test_user_prompt.txt'
+            max_new_tokens: 1024
+            load_in_4bit: False
+            sys_prompts: 'test_previewer_sys_prompt.txt'
+            user_prompts: 'test_previewer_user_prompt.txt'

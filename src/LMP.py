@@ -30,9 +30,10 @@ class LMP:
             openai.api_version = os.getenv("OPENAI_API_VERSION")
         else:
             self.model_id = get_path(self.cfg['model'])
-            self.adapter_id = get_path(self.cfg['adapter'])
-            self.sys_prompts = load_prompt(self.cfg['sys_prompts'])
-            self.user_prompts = load_prompt(self.cfg['user_prompts'])
+            
+        self.adapter_id = get_path(self.cfg['adapter'])
+        self.sys_prompts = load_prompt(self.cfg['sys_prompts'])
+        self.user_prompts = load_prompt(self.cfg['user_prompts'])
             
     
     
@@ -44,9 +45,10 @@ class LMP:
         self.user_prompts = self.user_prompts.replace('{custom_import}', custom_import)
         
         user1 = f"I would like you to help me write Python code to control a robot navigation operating in indoor environment. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{self.user_prompts}\n```\n\nNote that x is back to front, y is right to left, and z is bottom to up."
-        # user1 = f"I would like you to help me write Python code to control a robot arm operating in a tabletop environment. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{self.user_prompts}\n```\n\nNote that x is back to front, y is left to right, and z is bottom to up." 
         assistant1 = f'Got it. I will complete what you give me next and output the code only.'
-        # prompt = "Command: " + prompt
+        if (self.cfg['heirarchy'] == 'preview'):
+            user1 = f"{self.user_prompts}"
+            assistant1 = f'Got it. I will complete what you give me next.'
         prompt = f'Query: {prompt}'
         messages = [
             {"role": "system", "content": self.sys_prompts},
@@ -103,18 +105,23 @@ class LMP:
                 # pattern = r'assistant(.*?)# done' 
                 pattern = r'assistant\n(.*)'
                 matches = re.findall(pattern, result, re.DOTALL)
-                # print("="*80)
-                # print(result)
-                # print("="*80)
-                # print(matches[-1])
-                # print("="*80)
+                print("="*80)
+                print(result)
+                print("="*80)
+                print(matches[-1])
+                print("="*80)
                 final = re.findall(r'assistant(.*)', matches[-1], re.DOTALL)[-1]
             
             # print(final)
             # print(type(final))
             # print("="*80)
+            
+            # special case
             if not final:
                 return None
+            if self.cfg['heirarchy'] == 'preview':
+                return final, True
+            
             # execute the code
             gvars = self.fixed_vars | self.variable_vars
             lvars = {}
