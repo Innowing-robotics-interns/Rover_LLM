@@ -1,59 +1,38 @@
-import numpy as np
-import time
-{custom import}
+#Query: go forward 5m
+#this is a single action. So in the list, there is only one list. Because 1 represent go forward and the distance is 5m, so the first number in the list is 1, the second number in the list is 5.
+[[1, 5]]
+#done
 
+#Query: go back 3m
+#this is a single action. So in the list, there is only one list. Because 1 represent go forward or go back, and the distance is -3m, so the first number in the list is 1, the second number in the list is -3.
+[[1, -3]]
+#done
 
-# a square is going in all 4 directions in order with the same distance
+#Query: go forward (a bit)
+#this is a single action. So in the list, there is only one list. Because 1 represent go forward,so the first number in the list is 1.And the distance is unknown, so we use 1 as the default number in the list.
+[[1, 1]]
+#done
 
-# Query: stop
-planner("stop")
-# done
+#Query: go left 3m
+#this is a single action. So in the list, there is only one list. Because 2 represent go left and the distance is 3m, so the first number in the list is 2, the second number in the list is 3.
+[[2, 3]]
+#done
 
-# Query: move left
-planner("MoveDelta 'linear= x: 0.0, y: 1.0, z: 0.0")
-# done
+#Query: go to point (3, 4)
+#this is a single action. So in the list, there is only one list. Because 4 represent go to a given point, so the first number in the list is 4, the point is (3, 4), so the second and third number is 3 and 4.
+[[4, 3, 4]]
+#done
 
+#Query: rotate around point (4.2, 4.5) with radius 2.6
+#this is a single action. So in the list, there is only one list. Because 5 represent rotate around a given point, so the first number in the list is 5, the point is (4.2, 4.5), so the second and third number is 4.2 and 4.5, the radius is 2.6, so the forth number is 2.6.
+[[5, 4.2, 4.5, 2.6]]
+#done
 
-# Query: move forward a bit
-planner("MoveDelta 'linear= x: 1.0, y: 0.0, z: 0.0")
-# done
+#Query: draw a circle with radius 2.6.
+#this is a single action. So in the list, there is only one list. Because 6 represent draw a circle with the current position as a point above the circle,and 2.6 represent the radius is 2.6.So the first number is 6 and the second number is 2.6 in the list.
+[[6, 2.6]]
+#done
 
-
-# Query: move forward-left by a little
-planner("MoveDelta 'linear= x: 0.7, y: 0.7, z: 0.0")
-# done
-
-
-# Query: move to right for a large step
-planner("MoveDelta 'linear= x: 0.0, y: -2.0, z: 0.0")
-# done
-
-
-# Query: move backward-right for a large distance
-planner("MoveDelta 'linear= x: -1.4, y: -1.4, z: 0.0")
-# done
-
-
-# Query: draw a part of circle
-planner("Circular 'linear= x: 1.0, y: 0.0, z: 0.0' 'angular= x: 0.0, y: 0.0, z: 1.8'")
-# done
-
-# Query: draw a part of circle with radius 1
-# angular z = 2 / radius = 2 / 1 = 2
-planner("Circular 'linear= x: 2.0, y: 0.0, z: 0.0' 'angular= x: 0.0, y: 0.0, z: 2.0'")
-# done
-
-# Query: draw a part of circle with radius 4
-# angular z = 2 / 4 = 0.5
-planner("Circular 'linear= x: 2.0, y: 0.0, z: 0.0' 'angular= x: 0.0, y: 0.0, z: 0.5'")
-# done
-
-# Query: clear
-planner("clear")
-# done
-
-
-# Query: hey, stay for 2 seconds, then move forward a bit.
-time.sleep(2)
-planner("MoveDelta 'linear= x: 0.5, y: 0.0, z: 0.0'")
-# done
+#Query: go forward 2m and then go left 3m. finally draw a circle around point (1, 2) with radius 2
+[[1, 2], [2, 3], [5, 1, 2, 2]]
+#done

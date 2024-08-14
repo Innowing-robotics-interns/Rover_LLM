@@ -44,8 +44,8 @@ class LMP:
             custom_import = f"from LLM_lib import {', '.join(self.variable_vars.keys())}"
         self.user_prompts = self.user_prompts.replace('{custom_import}', custom_import)
         
-        user1 = f"I would like you to help me write Python code to control a robot navigation operating in indoor environment. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{self.user_prompts}\n```\n\nNote that x is back to front, y is right to left, and z is bottom to up."
-        assistant1 = f'Got it. I will complete what you give me next and output the code only.'
+        user1 = f"I would like you to help me write Python code to control a robot navigation operating in indoor environment. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{self.user_prompts}\n```\n\nNote that x is back to front with front is positive x, y is right to left with left is positive y, and z is bottom to up."
+        assistant1 = f'Got it. I will complete what you give me next and output the code in plain text only without code block.'
         if (self.cfg['heirarchy'] == 'preview'):
             user1 = f"{self.user_prompts}"
             assistant1 = f'Got it. I will complete what you give me next.'
@@ -105,11 +105,11 @@ class LMP:
                 # pattern = r'assistant(.*?)# done' 
                 pattern = r'assistant\n(.*)'
                 matches = re.findall(pattern, result, re.DOTALL)
-                print("="*80)
-                print(result)
-                print("="*80)
-                print(matches[-1])
-                print("="*80)
+                # print("="*80)
+                # print(result)
+                # print("="*80)
+                # print(matches[-1])
+                # print("="*80)
                 final = re.findall(r'assistant(.*)', matches[-1], re.DOTALL)[-1]
             
             # print(final)
@@ -122,11 +122,12 @@ class LMP:
             if self.cfg['heirarchy'] == 'preview':
                 return final, True
             
-            # execute the code
-            gvars = self.fixed_vars | self.variable_vars
-            lvars = {}
-            code = self.code_formatting(final)
-            success = safe_to_run(code, gvars, lvars)
+            success = True
+            # # execute the code
+            # gvars = self.fixed_vars | self.variable_vars
+            # lvars = {}
+            # code = self.code_formatting(final)
+            # success = safe_to_run(code, gvars, lvars)
             # if success: #and self.cfg['save_output']:
             #     print(lvars['result'])
         except KeyboardInterrupt:
