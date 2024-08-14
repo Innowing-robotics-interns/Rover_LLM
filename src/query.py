@@ -1,3 +1,5 @@
+# next formatting update: 23/08/2024
+
 from LMP import LMP
 from utils import get_config
 from BaseMotion import go_Xaxis, go_Yaxis, go_to_point, circle, ego_circle
@@ -53,7 +55,8 @@ def cmd_processing(cmd):
 		print(command)
 		if command[0] in command_map:
 			path += command_map[command[0]](command[1:])
-
+	# entire action list should be collected here
+	# error detect and handle can be added below
 	print(path)
 	if len(path) > 0:
 		for target_point in path:
