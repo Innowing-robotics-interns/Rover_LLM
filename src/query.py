@@ -2,8 +2,8 @@
 
 from LMP import LMP
 from utils import get_config
-from BaseMotion import go_Xaxis, go_Yaxis, go_to_point, circle, ego_circle
-import numpy, subprocess, time
+from BaseMotion import go_Xaxis, go_Yaxis, go_to_point, circle
+import numpy, subprocess, time 
 
 import os
 import openai
@@ -50,11 +50,17 @@ class Position_Receiver(Node):
 def cmd_processing(cmd):
 	path = []
 	list = eval(cmd)
+	action_history = {0: ""}
+	action_history_max_len = 20
+	action_history_idx = 0
 	print(list)
 	for command in list:
-		print(command)
 		if command[0] in command_map:
-			path += command_map[command[0]](command[1:])
+			action_history_idx = (action_history_idx + 1) % action_history_max_len
+			action_history[action_history_idx] = command
+			if 0 < command[0] < 10:
+				path += [f'Planer({command})'] # temporary use for testing
+				# path += command_map[command[0]](command[1:])
 	# entire action list should be collected here
 	# error detect and handle can be added below
 	print(path)
@@ -108,8 +114,12 @@ def main():
         2: lambda command: go_Yaxis(command, position_receiver),
         3: lambda command: go_to_point(command, position_receiver),
         4: lambda command: circle(command, position_receiver),
-        5: lambda command: ego_circle(command, position_receiver)
     }
+	# history stored in format of [input_text, result]
+	# max length of query history is 10
+	query_history = {0: ["", ""]}
+	query_history_max_len = 3
+	query_history_idx = 0
 
 	# test
 	# test_llm = LMP("test", get_config('configs/config.yaml')['lmps']['test'])
@@ -123,7 +133,7 @@ def main():
 	# 		result, success = test_llm(input_text)
 	# 		result, success = model(result)
 	# 		print(result)
- 
+
 
 	while True:
 	# if True:
@@ -134,10 +144,13 @@ def main():
 		while not success:
 			result, success = preview(input_text)  
 			print("*"*80)
-			print(result)
+			print(input_text+"\n"+result)
 			print("*"*80)
-			result, success = model(input_text+"\n"+result)
+			model_input = f'Last operation:\nQuery:{query_history[query_history_idx][0]}\nResult:{query_history[query_history_idx][1]}\n\nCurrent operation: {input_text}\n{result}'
+			result, success = model(model_input)
 			if success:
+				query_history_idx = (query_history_idx + 1) % query_history_max_len
+				query_history[query_history_idx] = [input_text, result]
 				cmd_processing(result)
 			print(result)
 

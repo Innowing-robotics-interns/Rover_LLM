@@ -20,19 +20,15 @@
 
 #Query: go to point (3, 4)
 #this is a single action. So in the list, there is only one list. Because 4 represent go to a given point, so the first number in the list is 4, the point is (3, 4), so the second and third number is 3 and 4.
-[[4, 3, 4]]
+[[3, 3, 4]]
 #done
 
 #Query: rotate around point (4.2, 4.5) with radius 2.6
 #this is a single action. So in the list, there is only one list. Because 5 represent rotate around a given point, so the first number in the list is 5, the point is (4.2, 4.5), so the second and third number is 4.2 and 4.5, the radius is 2.6, so the forth number is 2.6.
-[[5, 4.2, 4.5, 2.6]]
+[[4, 4.2, 4.5, 2.6]]
 #done
 
-#Query: draw a circle with radius 2.6.
-#this is a single action. So in the list, there is only one list. Because 6 represent draw a circle with the current position as a point above the circle,and 2.6 represent the radius is 2.6.So the first number is 6 and the second number is 2.6 in the list.
-[[6, 2.6]]
-#done
 
 #Query: go forward 2m and then go left 3m. finally draw a circle around point (1, 2) with radius 2
-[[1, 2], [2, 3], [5, 1, 2, 2]]
+[[1, 2], [2, 3], [4, 1, 2, 2]]
 #done
