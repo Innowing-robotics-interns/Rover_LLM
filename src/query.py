@@ -2,7 +2,7 @@
 
 from LMP import LMP
 from utils import get_config
-from BaseMotion import go_Xaxis, go_Yaxis, go_to_point, circle
+from BaseMotion import go_Xaxis, go_Yaxis, go_to_point, circle, BASEMOTION
 import numpy, subprocess, time 
 
 import os
@@ -17,70 +17,6 @@ from rclpy.node import Node
 from nav_msgs.msg import Odometry, Path
 from geometry_msgs.msg import PointStamped
 
-
-class Position_Receiver(Node):
-    def __init__(self):
-        super().__init__('position_receiver')
-        self.odom_sub = self.create_subscription(
-            Odometry,
-            'odom',
-            self.odom_callback,
-            10
-        )
-        self.point_pub = self.create_publisher(
-            PointStamped,
-            'clicked_point',
-            10
-        )
-        self.current_position = None
-        self.current_orientation = None
-
-    def odom_callback(self, msg):
-        self.current_pose = msg.pose.pose.position
-        self.current_orientation = msg.pose.pose.orientation
-
-    def publish_point(self, target_point):
-        point_msg = PointStamped()
-        point_msg.point.x = target_point[0]
-        point_msg.point.y = target_point[1]
-        point_msg.point.z = target_point[2]
-        self.point_pub.publish(point_msg)
-
-# idea adapted from THU students
-def cmd_processing(cmd):
-	path = []
-	list = eval(cmd)
-	action_history = {0: ""}
-	action_history_max_len = 20
-	action_history_idx = 0
-	print(list)
-	for command in list:
-		if command[0] in command_map:
-			action_history_idx = (action_history_idx + 1) % action_history_max_len
-			action_history[action_history_idx] = command
-			if 0 < command[0] < 10:
-				path += [f'Planer({command})'] # temporary use for testing
-				# path += command_map[command[0]](command[1:])
-	# entire action list should be collected here
-	# error detect and handle can be added below
-	print(path)
-	if len(path) > 0:
-		for target_point in path:
-			rclpy.spin_once(position_receiver)
-			position_now[0] = position_receiver.current_pose.x
-			position_now[1] = position_receiver.current_pose.y
-			position_now[2] = position_receiver.current_pose.z
-			position_receiver.publish_point(target_point)
-			print('send a target_point!')
-			bias = ((position_now[0] - target_point[0])**2 + (position_now[1] - target_point[1])**2 + (position_now[2] - target_point[2])**2)**0.5
-			while bias > 0.01:
-				rclpy.spin_once(position_receiver)
-				#position_receiver.publish_point(target_point)
-				position_now[0] = position_receiver.current_pose.x
-				position_now[1] = position_receiver.current_pose.y
-				position_now[2] = position_receiver.current_pose.z
-				bias = ((position_now[0] - target_point[0])**2 + (position_now[1] - target_point[1])**2 + (position_now[2] - target_point[2])**2)**0.5
-	path.clear()
 
 def model_init():
 	cfg = get_config('configs/config.yaml')['lmps']
@@ -103,18 +39,11 @@ def model_init():
 
 def main():
     # declare global variables
-	global position_receiver, position_now, command_map
+
     # init
 	rclpy.init()
 	preview, model = model_init() 
-	position_receiver = Position_Receiver()
-	position_now = [0, 0, 0]
-	command_map = {
-        1: lambda command: go_Xaxis(command, position_receiver),
-        2: lambda command: go_Yaxis(command, position_receiver),
-        3: lambda command: go_to_point(command, position_receiver),
-        4: lambda command: circle(command, position_receiver),
-    }
+	MoblieBase = BASEMOTION()
 	# history stored in format of [input_text, result]
 	# max length of query history is 10
 	query_history = {0: ["", ""]}
@@ -151,7 +80,7 @@ def main():
 			if success:
 				query_history_idx = (query_history_idx + 1) % query_history_max_len
 				query_history[query_history_idx] = [input_text, result]
-				cmd_processing(result)
+				MoblieBase.cmd_processing(result)
 			print(result)
 
 
