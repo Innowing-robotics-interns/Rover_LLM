@@ -49,7 +49,10 @@ def main():
 	query_history = {0: ["", ""]}
 	query_history_max_len = 3
 	query_history_idx = 0
-
+	action_history = {0: ""}
+	action_history_max_len = 20
+	action_history_idx = 0
+    
 	# test
 	# test_llm = LMP("test", get_config('configs/config.yaml')['lmps']['test'])
 	# while True:
@@ -65,25 +68,24 @@ def main():
 
 
 	while True:
-	# if True:
 		input_text = input("\n>>Prompt: ")
 		if input_text == 'exit':
 			break
 		success = False
 		while not success:
 			result, success = preview(input_text)  
-			print("*"*80)
-			print(input_text+"\n"+result)
-			print("*"*80)
 			model_input = f'Last operation:\nQuery:{query_history[query_history_idx][0]}\nResult:{query_history[query_history_idx][1]}\n\nCurrent operation: {input_text}\n{result}'
+			print("*"*80)
+			print(model_input)
+			print("*"*80)
 			result, success = model(model_input)
 			if success:
 				query_history_idx = (query_history_idx + 1) % query_history_max_len
 				query_history[query_history_idx] = [input_text, result]
-				MoblieBase.cmd_processing(result)
+				MoblieBase.run(result)
 			print(result)
 
-
-
+	rclpy.shutdown()
+ 
 if __name__ == '__main__':
     main()

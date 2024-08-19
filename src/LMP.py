@@ -38,7 +38,6 @@ class LMP:
         self.user_prompts = load_prompt(self.cfg['user_prompts'])
             
     
-    
     def format_chat_template(self, prompt, document=None):
         if (self.variable_vars is None):
             custom_import = ''

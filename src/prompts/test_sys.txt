@@ -4,4 +4,4 @@ Here are some code numbers and their meanings:
 1 represent go forward or go back, command will be in format [1, distance]
 2 represnet go left or go right, command will be in format [2, distance]
 3 represent go to a given point, command will be in format [3, x, y]
-4 represent rotate around a given point with given radius, command will be in format [4, x, y, radius]
+4 represent rotate around a given point with given radius, command will be in format [4, x, y, radius, number of circles]

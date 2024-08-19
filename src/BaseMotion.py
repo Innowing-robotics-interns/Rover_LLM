@@ -52,38 +52,52 @@ class BASEMOTION:
             5: lambda command: setMark(command, self.position_receiver)
         }
         
-    def cmd_processing(self, cmd):
-        path = []
-        list = eval(cmd)
-        action_history = {0: ""}
-        action_history_max_len = 20
-        action_history_idx = 0
-        print(list)
-        for command in list:
-            if command[0] in self.command_map:
-                action_history_idx = (action_history_idx + 1) % action_history_max_len
-                action_history[action_history_idx] = command
-                if 0 < command[0] < 10:
-                    path += [f'Planer({command})'] # temporary use for testing
-                    # path += self.command_map[command[0]](command[1:])
-        # entire action list should be collected here
-        # error detect and handle can be added below
-        print(path)
+    # def cmd_processing(self, cmd):
+    #     path = []
+    #     action_history = {0: ""}
+    #     action_history_max_len = 20
+    #     action_history_idx = 0
+    #     for command in cmd:
+    #         if command[0] in self.command_map:
+    #             action_history_idx = (action_history_idx + 1) % action_history_max_len
+    #             action_history[action_history_idx] = command
+    #             if 0 < command[0] < 10:
+    #                 path += [f'Planer({command})'] # temporary use for testing
+    #                 # path += self.command_map[command[0]](command[1:])
+    #     # entire action list should be collected here
+    #     # error detect and handle can be added below
+    #     print("-"*80)
+    #     print(action_history)
+    #     print("-"*80)
+        
+    def run(self, path):
+    #     path = []
+    #     action_history = {0: ""}
+    #     action_history_max_len = 20
+    #     action_history_idx = 0
+    #     for command in cmd:
+    #         if command[0] in self.command_map:
+    #             action_history_idx = (action_history_idx + 1) % action_history_max_len
+    #             action_history[action_history_idx] = command
+    #             if 0 < command[0] < 10:
+    #                 path += [f'Planer({command})'] # temporary use for testing
+    #                 # path += self.command_map[command[0]](command[1:])
+    #     # entire action list should be collected here
+    #     # error detect and handle can be added below
+    #     print("-"*80)
+    #     print(action_history)
+    #     print("-"*80)
         if len(path) > 0:
             for target_point in path:
                 rclpy.spin_once(self.position_receiver)
-                self.position_now[0] = self.position_receiver.current_pose.x
-                self.position_now[1] = self.position_receiver.current_pose.y
-                self.position_now[2] = self.position_receiver.current_pose.z
+                self.position_now = self.position_receiver.current_pose
                 self.position_receiver.publish_point(target_point)
                 print('send a target_point!')
                 bias = ((self.position_now[0] - target_point[0])**2 + (self.position_now[1] - target_point[1])**2 + (self.position_now[2] - target_point[2])**2)**0.5
                 while bias > 0.01:
                     rclpy.spin_once(self.position_receiver)
                     #position_receiver.publish_point(target_point)
-                    self.position_now[0] = self.position_receiver.current_pose.x
-                    self.position_now[1] = self.position_receiver.current_pose.y
-                    self.position_now[2] = self.position_receiver.current_pose.z
+                    self.position_now = self.position_receiver.current_pose
                     bias = ((self.position_now[0] - target_point[0])**2 + (self.position_now[1] - target_point[1])**2 + (self.position_now[2] - target_point[2])**2)**0.5
 
 # forward (+ve) and backward 
@@ -91,15 +105,8 @@ def go_Xaxis(cmd, position_receiver):
     dis          = cmd[0]
     point        = []
     rclpy.spin_once(position_receiver)
-    x            = position_receiver.current_pose.x
-    y            = position_receiver.current_pose.y
-    z            = position_receiver.current_pose.z
-    rx           = position_receiver.current_orientation.x
-    ry           = position_receiver.current_orientation.y
-    rz           = position_receiver.current_orientation.z
-    rw           = position_receiver.current_orientation.w
-    position     = [x, y, z]
-    rotation     = [rx, ry, rz, rw]
+    position     = position_receiver.current_pose
+    rotation     = position_receiver.current_orientation
     euler        = to_euler(rotation)
     position[0] += dis*math.cos(euler[2])
     position[1] += dis*math.sin(euler[2])
@@ -112,15 +119,8 @@ def go_Yaxis(cmd, position_receiver):
     dis          = cmd[0]
     point        = []
     rclpy.spin_once(position_receiver)
-    x            = position_receiver.current_pose.x
-    y            = position_receiver.current_pose.y
-    z            = position_receiver.current_pose.z
-    rx           = position_receiver.current_orientation.x
-    ry           = position_receiver.current_orientation.y
-    rz           = position_receiver.current_orientation.z
-    rw           = position_receiver.current_orientation.w
-    position     = [x, y, z]
-    rotation     = [rx, ry, rz, rw]
+    position     = position_receiver.current_pose
+    rotation     = position_receiver.current_orientation
     euler        = to_euler(rotation)
     euler[2]    += 90
     position[0] += dis*math.cos(euler[2])
@@ -161,5 +161,5 @@ def stop(cmd, position_receiver):
 
 def setMark(cmd, position_receiver):
     name = cmd[0]
-    position = [position_receiver.current_pose.x, position_receiver.current_pose.y, position_receiver.current_pose.z]
+    position = position_receiver.current_pose
     return [name, position]

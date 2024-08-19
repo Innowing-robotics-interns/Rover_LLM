@@ -25,10 +25,10 @@
 
 #Query: rotate around point (4.2, 4.5) with radius 2.6
 #this is a single action. So in the list, there is only one list. Because 5 represent rotate around a given point, so the first number in the list is 5, the point is (4.2, 4.5), so the second and third number is 4.2 and 4.5, the radius is 2.6, so the forth number is 2.6.
-[[4, 4.2, 4.5, 2.6]]
+[[4, 4.2, 4.5, 2.6, 1]]
 #done
 
 
 #Query: go forward 2m and then go left 3m. finally draw a circle around point (1, 2) with radius 2
-[[1, 2], [2, 3], [4, 1, 2, 2]]
+[[1, 2], [2, 3], [4, 1, 2, 2, 1]]
 #done
