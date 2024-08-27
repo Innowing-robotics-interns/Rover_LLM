@@ -10,7 +10,9 @@ import os
 import openai
 from openai import AzureOpenAI
 
-
+OPENAI_API_KEY      = "Enter your API key here"
+OPENAI_API_ENDPOINT = "Enter the endpoint here"
+OPENAI_API_VERSION  = "Enter the version here"
 
 class LMP:
     def __init__(self, name, cfg, fixed_vars={}, variable_vars={}):
@@ -27,17 +29,17 @@ class LMP:
         if 'gpt' in self.cfg['model'] :
             load_dotenv()
             openai.api_type = "azure"
-            openai.api_key = os.getenv("OPENAI_API_KEY")
-            openai.azure_endpoint = os.getenv("OPENAI_API_ENDPOINT")
-            openai.api_version = os.getenv("OPENAI_API_VERSION")
+            openai.api_key = OPENAI_API_KEY
+            openai.azure_endpoint = OPENAI_API_ENDPOINT
+            openai.api_version = OPENAI_API_VERSION
         else:
             self.model_id = get_path(self.cfg['model'])
             
         self.adapter_id = get_path(self.cfg['adapter'])
         self.sys_prompts = load_prompt(self.cfg['sys_prompts'])
         self.user_prompts = load_prompt(self.cfg['user_prompts'])
-            
-    
+
+
     def format_chat_template(self, prompt, document=None):
         if (self.variable_vars is None):
             custom_import = ''
@@ -45,12 +47,12 @@ class LMP:
             custom_import = f"from LLM_lib import {', '.join(self.variable_vars.keys())}"
         self.user_prompts = self.user_prompts.replace('{custom_import}', custom_import)
         
-        user1 = f"I would like you to help me write Python code to control a robot navigation operating in indoor environment. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{self.user_prompts}\n```\n\nNote that x is back to front with front is positive x, y is right to left with left is positive y, and z is bottom to up."
+        user1 = f"I would like you to help me write Python code to control a robot navigation operating in indoor environment. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{self.user_prompts}\n```\n\nNote that in ROS2 axis, x is back to front with front is positive x, y is right to left with left is positive y, and z is bottom to up."
         assistant1 = f'Got it. I will complete what you give me next and output the code in plain text only without code block.'
         if (self.cfg['heirarchy'] == 'preview'):
             user1 = f"{self.user_prompts}"
             assistant1 = f'Got it. I will complete what you give me next.'
-        prompt = f'Query: {prompt}'
+        prompt = f'Note that in ROS2 axis, x is from back to front with front is positive x-direction, y is from right to left with left is positive y-direction, right if negative y-direction, and z is from bottom to up.\nQuery: {prompt}'
         messages = [
             {"role": "system", "content": self.sys_prompts},
             {"role": "user",   "content": user1},
@@ -67,8 +69,8 @@ class LMP:
             return_tensors="pt"
         ).to("cuda")
         return input_ids
-    
-    
+
+
     def code_formatting(self, code):
         if self.cfg['heirarchy'] == 'low': # lower level LLM
             code_prefix = f"import {', '.join(self.fixed_vars.keys())}"+ f"\ncommands = ['source ~/interbotix_ws/install/setup.bash', '''{code}''']\n"
@@ -78,7 +80,7 @@ class LMP:
         code_suffix = f"for command in commands:\n\tresult = subprocess.run(command, shell=True, executable='/bin/bash', capture_output=True, text=True)"
         return code_prefix + code_suffix
 
-    
+
     def generate(self, input_ids):
         try:
             if 'gpt' in self.cfg['model']:
@@ -143,9 +145,9 @@ class LMP:
         self.config()
         if 'gpt' in self.cfg['model']:
             self.model = AzureOpenAI(
-                api_key = os.getenv("OPENAI_API_KEY"),
-                api_version = os.getenv("OPENAI_API_VERSION"),
-                azure_endpoint = os.getenv("OPENAI_API_ENDPOINT")
+                api_key = OPENAI_API_KEY,
+                azure_endpoint = OPENAI_API_ENDPOINT,
+                api_version = OPENAI_API_VERSION,
                 )
             return
         else:

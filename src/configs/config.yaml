@@ -12,24 +12,20 @@ lmp_config:
             # model: 'gpt-4'
             adapter:  # leave empty if no adapter is used
             max_new_tokens: 1024
-            load_in_4bit: False
             sys_prompts: 'previewer_sys_prompt.txt'
             user_prompts: 'previewer_user_prompt.txt'
+            load_in_4bit: False
         
         coder: # high-level interpreter
             name: 'coder'
             heirarchy: 'high'
-            # model: 'llama3-8B-instruct-official-fineTuned'
+            model: 'gpt-4'
             adapter:  # leave empty if no adapter is used
             max_new_tokens: 1024
-            # sys_prompts: 'coder_sys_prompt.txt'
-            # user_prompts: 'coder_user_prompt.txt'
+            sys_prompts: 'coder_sys_prompt.txt'
+            user_prompts: 'coder_user_prompt.txt'
             load_in_4bit: False
 
-            # test / demo
-            model: 'gpt-4'
-            sys_prompts: 'test_sys.txt'
-            user_prompts: 'test_user.txt'
 
         # planner: # low-level planner
         #     name: 'planner'

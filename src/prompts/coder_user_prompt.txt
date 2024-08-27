@@ -1,141 +1,72 @@
-import numpy as np
-{custom import}
-from utils import planner, arm
+#Query: go forward 5m
+#this is a single action. So in the list, there is only one list. Because 1 represent go forward and the distance is 5m, so the first number in the list is 1, the second number in the list is 5.
+[[1, 5, 'FF', 'FF', 'FF']]
+#done
+
+#Query: go back 3m
+#this is a single action. So in the list, there is only one list. Because 1 represent go forward or go back, and the distance is -3m, so the first number in the list is 1, the second number in the list is -3.
+[[1, -3, 'FF', 'FF', 'FF']]
+#done
+
+#Query: go forward (a bit)
+#this is a single action. So in the list, there is only one list. Because 1 represent go forward,so the first number in the list is 1.And the distance is unknown, so we use 1 as the default number in the list.
+[[1, 1, 'FF', 'FF', 'FF']]
+#done
 
 
-# Query: can you go to Event Hall?
-planner("MoveTo Event Hall")
-# done
+#Query: go (to your) right 3m 
+#this is a single action. So in the list, there is only one list. Because 2 represent go right and the distance is 3m, so the first number in the list is 2, the second number in the list is 3.
+[[2, -3, 'FF', 'FF', 'FF']]
+#done
 
 
-# Query: please take me to Makerspace A.
-planner("MoveTo Makerspace A")
-# done
+#Query: move forward while facing a point (3, 4)
+#this is a single action. So in the list, there is only one list. Because 1 represent go forward, so the first number in the list is 1, the second number in the list is 'FF', the point is (3, 4), so the third and forth number is 3 and 4.
+[[1, '+FF', 3, 4, 'FF']]
+#done
+
+#Query: go to point (3, 4)
+#this is a single action. So in the list, there is only one list. Because 3 represent go to a given point, so the first number in the list is 4, no name of point is mentioned, the second element is 'FF', the point is (3, 4), so the third fourth number is 3 and 4. No facing is needed, thus the rest of the list is 'FF'.
+[[3, 'FF', 3, 4, 'FF', 'FF', 'FF']]
+#done
+
+#Query: go to home
+#this is a single action. So in the list, there is only one list. Because 3 represent go to a given point, so the first number in the list is 3, the point is home as the second element, so the third foutrh number is 'FF' and 'FF'.
+[[3, 'home', 'FF', 'FF', 'FF', 'FF', 'FF']]
+#done
 
 
-# Query: go to IoT zone then go to 3D printer station
-planner("MoveTo IoT zone")
-planner("MoveTo 3D printer station")
-# done
+#Query: rotate around point (4.2, 4.5) with radius 2.6 
+#this is a single action. So in the list, there is only one list. Because 4 represent rotate around a given point or object, so the first number in the list is 4, and no name of location/object, the second element is 'FF', the point is (4.2, 4.5), so the third and fourth number is 4.2 and 4.5, the radius is 2.6, so the fifth number is 2.6, the number of circles is 1, so the sixth number is 1. No facing is needed, thus the seventh number is 0, and the rest of the list is 'FF'.
+[[4, 'FF', 4.2, 4.5, 2.6, 1, 0, 'FF', 'FF']]
+#done
 
+#Query: rotate around home with radius 2.6 while facing it.
+#this is a single action. So in the list, there is only one list. Because 4 represent rotate around a given point or object, so the first number in the list is 4, the point is home as the second element, so the third and forth number is 'FF' and 'FF', the radius is 2.6, so the fifth number is 2.6, the number of circles is 1, so the sixth number is 1, the facing is needed, thus the seventh number is 1, and the rest of the list is 'FF'.
+[[4, 'home', 'FF', 'FF', 2.6, 1, 1, 'FF', 'FF']]
+#done
 
-# Query: hey, stay for 5 seconds, then go to storage room .
-planner("Delay 5 seconds")
-planner("MoveTo storage room")
-# done
+#Query: go forward 2m and then go left 3m. finally draw a circle around point (1, 2) with radius 2 for 3 round and facing point (3,4).
+[[1, 2, 'FF', 'FF', 'FF'], [2, 3, 'FF', 'FF', 'FF'], [4, 'FF', 1, 2, 2, 3, 1, 3, 4]]
+#done
 
-# Query: go to the Conference Room, wait for 10 seconds, then go to the Robotics Lab, and finally return to the Conference Room.
-planner("MoveTo Conference Room")
-planner("Delay 10 seconds")
-planner("MoveTo Robotics Lab")
-planner("MoveTo Conference Room")
-# done
+#Query: set a point at (3, 4) named Home and then go to Home.
+[[5, 0, 3, 4, 'home'], [3, 'home', 'FF', 'FF', 'FF', 'FF', 'FF']]
+#done
 
+#Query: mark a point at current position.
+#this is a single action. So in the list, there is only one list. Because 5 represent mark a point, so the first number in the list is 5, the second number is 1, the third and forth number is 'FF' and 'FF', no name is mentioned.
+[[5, 1, 'FF', 'FF', 'FF']]
+#done
 
-# Query: please take me to the Cafeteria, if it's occupied, go to the Library instead.
-if planner("CheckOccupancy Cafeteria") == "occupied":
-    planner("MoveTo Library")
-else:
-    planner("MoveTo Cafeteria")
-# done
+#Query: turn clockwise / right
+[[6, 'FF', 'FF', 'FF', -1, 90]]
+#done
 
+#Query: turn to point (3, 4)
+[[6, 'FF', 3, 4, 'FF', 'FF']]
+#done
 
-# Query: go to the Auditorium, wait for 5 seconds, then go to the Reception Area, and if the Reception Area is busy, go to the Workshop B.
-planner("MoveTo Auditorium")
-planner("Delay 5 seconds")
-if planner("CheckOccupancy Reception Area") == "busy":
-    planner("MoveTo Workshop B")
-else:
-    planner("MoveTo Reception Area")
-# done
-
-
-# Query: hey, go to the VR zone, then to the AR station, wait for 3 seconds, and finally go to the Maintenance Room.
-planner("MoveTo VR zone")
-planner("MoveTo AR station")
-planner("Delay 3 seconds")
-planner("MoveTo Maintenance Room")
-# done
-
-
-# Query: can you go to the Event Hall, if it's not available, wait for 5 seconds and try again, repeat this until it's available.
-while planner("CheckOccupancy Event Hall") == "not available":
-    planner("Delay 5 seconds")
-planner("MoveTo Event Hall")
-# done
-
-
-# Query: please take me to the Makerspace A, then to the IoT zone, wait for 2 seconds, and finally go to the 3D printer station.
-planner("MoveTo Makerspace A")
-planner("MoveTo IoT zone")
-planner("Delay 2 seconds")
-planner("MoveTo 3D printer station")
-# done
-
-
-# Query: go to the storage room, if it's locked, go to the Reception Area and get the key, then return to the storage room.
-if planner("CheckLock storage room") == "locked":
-    planner("MoveTo Reception Area")
-    planner("GetKey storage room")
-    planner("MoveTo storage room")
-else:
-    planner("MoveTo storage room")
-# done
-
-# Query: homing
-planner("MoveTo Home")
-arm("Ready")
-arm("Home")
-# done
-
-# Query: shutdown
-planner("Shutdown")
-arm("Shutdown")
-# done
-
-# Query: Move the arm to (1.0,3.2,0.3)
-arm("Ready")
-arm("MoveTo x='1.0', y='3.2', z='0.3'")
-# done
-
-# Query: arm go to point (0.7,0.4,1.1)
-arm("Ready")
-arm("MoveTo x='0.7', y='0.4', z='1.1'")
-# done
-
-# Query: arm take specific pose (0.5,1.0,0.3, 0.0,0.0821,0.0,0.99021)
-arm("Ready")
-arm("Pose x='0.5', y='1.0', z='0.3', ox='0.0', oy='0.0821', oz='0.0', ow='0.99021'")
-# done
-
-# Query: arm go to absolute pose (1.0,0.5,1.3, 0.2221,0.0152,0.5024,0.41)
-arm("Ready")
-arm("Pose x='1.0', y='0.5', z='1.3', ox='0.2221', oy='0.0152', oz='0.5024', ow='0.41'")
-# done
-
-# Query: arm go up a little bit
-arm("Ready")
-arm("Increment_xyz x='0.0', y='0.0', z='0.1'")
-# done
-
-# Query: arm move backward by a small distance
-arm("Ready")
-arm("Increment_xyz x='-0.1', y='0.0', z='0.0'")
-# done
-
-# Query: arm lower a small angle of the pitch angle 
-arm("Ready")
-arm("Increment_rpy r='0.0', p='-0.1', y='0.0'")
-# done
-
-# Query: arm go forward a bit and rotate clockwise for a small angle in yaw-axis
-arm("Ready")
-arm("Increment_xyz x='0.1', y='0.0', z='0.0'")
-arm("Increment_rpy r='0.0', p='0.0', y='0.1'")
-# done
-
-# Query: arm go up by a small distance and rotate anti-clockwise for a small angle in yaw-axis
-arm("Ready")
-arm("Increment_xyz x='0.0', y='0.0', z='0.1'")
-arm("Increment_rpy r='0.0', p='0.0', y='-0.1'")
-# done
+#Query: turn to place named Home but not move
+[[6, 'home', 'FF', 'FF', 'FF', 'FF']]
+#done

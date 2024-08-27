@@ -2,7 +2,7 @@
 
 from LMP import LMP
 from utils import get_config
-from BaseMotion import go_Xaxis, go_Yaxis, go_to_point, circle, BASEMOTION
+from BaseMotion import BASEMOTION
 import numpy, subprocess, time 
 
 import os
@@ -11,15 +11,13 @@ from openai import AzureOpenAI
 from dotenv import load_dotenv
 import rclpy
 from rclpy.node import Node
-from nav_msgs.msg import Odometry
-import rclpy
-from rclpy.node import Node
 from nav_msgs.msg import Odometry, Path
 from geometry_msgs.msg import PointStamped
 
 
+
 def model_init():
-	cfg = get_config('configs/config.yaml')['lmps']
+	cfg = get_config('capllm/configs/config.yaml')['lmps']
 	fixed_vars = {'numpy':numpy, 'subprocess':subprocess, 'time': time} # for third libraries that LLM can access
 	variable_vars = {} # for first party libraries (can be other LLM) that a LLM can access
 	# allow LMPs to access other LMPs
@@ -43,7 +41,7 @@ def main():
     # init
 	rclpy.init()
 	preview, model = model_init() 
-	MoblieBase = BASEMOTION()
+	base_motion = BASEMOTION()
 	# history stored in format of [input_text, result]
 	# max length of query history is 10
 	query_history = {0: ["", ""]}
@@ -52,7 +50,7 @@ def main():
 	action_history = {0: ""}
 	action_history_max_len = 20
 	action_history_idx = 0
-    
+
 	# test
 	# test_llm = LMP("test", get_config('configs/config.yaml')['lmps']['test'])
 	# while True:
@@ -73,17 +71,23 @@ def main():
 			break
 		success = False
 		while not success:
-			result, success = preview(input_text)  
-			model_input = f'Last operation:\nQuery:{query_history[query_history_idx][0]}\nResult:{query_history[query_history_idx][1]}\n\nCurrent operation: {input_text}\n{result}'
+			# result, success = preview(input_text)  
+			# model_input = f'Last operation:\nQuery:{query_history[query_history_idx][0]}\nResult:{query_history[query_history_idx][1]}\n\nCurrent operation: {input_text}\n{result}'
+			# model_input = f'Query:{input_text}\nPossible explaination:{result}'
+			model_input = f'Query: {input_text}'
 			print("*"*80)
 			print(model_input)
 			print("*"*80)
 			result, success = model(model_input)
+			print(result)
+			print("*"*80)
+			# input()
+			# continue
 			if success:
 				query_history_idx = (query_history_idx + 1) % query_history_max_len
 				query_history[query_history_idx] = [input_text, result]
-				MoblieBase.run(result)
-			print(result)
+				base_motion.run(result)
+			print("result: ",result)
 
 	rclpy.shutdown()
  

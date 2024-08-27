@@ -1,7 +1,13 @@
 import os
 import glob
 import yaml
+import math
 from scipy.spatial.transform import Rotation as R
+
+
+
+PI = math.pi
+
 
 ##################################################################################
 # system functions
@@ -13,6 +19,7 @@ def get_path(fname=None):
         return None
     
     start_dir = os.getcwd()
+    # print("fname: ",fname, "start_dir: ",start_dir)
     search_pattern = os.path.join(start_dir, '**', fname)  # Pattern for recursive search
     found_files = glob.glob(search_pattern, recursive=True)  # Perform the search
     if not found_files:
@@ -26,11 +33,13 @@ def get_path(fname=None):
 # config_path: path to config file
 # config_name: name of config file
 # return: config dictionary
-def get_config(config_name=None, config_path='./configs/config.yaml'):
-    assert config_name and os.path.exists(config_path), f'config file does not exist ({config_name, config_path})'
+def get_config(config_name=None, config_path='./capllm/configs/config.yaml'):
+    assert config_name or os.path.exists(config_path), f'config file does not exist ({config_name, config_path})'
     
     if config_name:
         config_path = get_path(config_name)
+        
+    # print(config_path)
     with open(config_path, 'r') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     config = config['lmp_config']
@@ -46,6 +55,7 @@ def load_prompt(prompt_fname:str, prompt_fpath=None)->str:
         prompt_fpath = get_path(prompt_fname)
     assert prompt_fpath, f'prompt file does not exist ({prompt_fname})'
 
+    # print(prompt_fpath)
     with open(prompt_fpath, 'r') as f:
         contents = f.read().strip()
     return contents
@@ -54,17 +64,37 @@ def load_prompt(prompt_fname:str, prompt_fpath=None)->str:
 
 ##################################################################################
 # Math functions
+def angle_calculation(x1,y1,x2,y2):
+    dx = x2 - x1
+    dy = y2 - y1
+    angle = math.atan2(dy, dx)
+    if angle < -PI:
+        angle += 2*PI
+    if angle > PI:
+        angle -= 2*PI
+    return angle
+    
+def value_CLIP(value, min_value, max_value):
+    return max(min(value, max_value), min_value)
+
+def value_NORM(value, min_value, max_value):
+    if value < min_value:
+        value += (max_value - min_value)
+    if value > max_value:
+        value -= (max_value - min_value)
+    return value
+
 # Convert quaternion to euler angles
 def to_euler(quaternion):
     r = R.from_quat(quaternion)
-    euler = r.as_euler('xyz', degrees=True)
+    euler = r.as_euler('xyz', degrees=False)
     return euler
 
-# Convert euler angles to quaternion
-def to_quaternion(euler):
-    r = R.from_euler('xyz', euler, degrees=True)
-    quaternion = r.as_quat()
-    return list(quaternion)
+# # Convert euler angles to quaternion
+# def to_quaternion(euler):
+#     r = R.from_euler('xyz', euler, degrees=True)
+#     quaternion = r.as_quat()
+#     return list(quaternion)
 
 ##################################################################################
 

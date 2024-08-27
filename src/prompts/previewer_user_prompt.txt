@@ -1,2 +1,3 @@
 You need to provide the summary step by step and stick to the input words.
+Note that x is from back to front with front is positive x-directon, y is from right to left with left is positive y-direction, and z is from bottom to up.
 Provide the steps only.
