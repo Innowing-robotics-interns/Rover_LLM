@@ -1,8 +1,7 @@
-# next formatting update: 23/08/2024
 
-from LMP import LMP
-from utils import get_config
-from BaseMotion import BASEMOTION
+from capllm.LMP import LMP
+from capllm.utils import get_config
+from capllm.BaseMotion import BASEMOTION
 import numpy, subprocess, time 
 
 import os
@@ -13,8 +12,32 @@ import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import Odometry, Path
 from geometry_msgs.msg import PointStamped
+from std_msgs.msg import String
 
+class QUERY(Node):
+    def __init__(self):
+        super().__init__('Query')
+        self.query_pub = self.create_publisher(
+			String,
+			'query',
+			10)
+        self.response_sub = self.create_subscription(
+            String, 
+            'response', 
+            self.query_callback, 
+            10)
+        self.response_sub
 
+	# Receive response from LLM
+    def query_callback(self, msg):
+        # self.get_logger().info('I heard: "%s"' % msg)	
+        print(msg.data)
+        
+	# Publish command to LLM
+    def publish_cmd(self, cmd):
+        msg = String()
+        msg.data = cmd
+        self.query_pub.publish(msg)
 
 def model_init():
 	cfg = get_config('capllm/configs/config.yaml')['lmps']
@@ -31,17 +54,18 @@ def model_init():
 
 	# high-level LLM setup
 	coder = LMP("coder", cfg['coder'], fixed_vars, variable_vars)
-	previewer = LMP("previewer", cfg['previewer'])
+	previewer = None # LMP("previewer", cfg['previewer'])
  
 	return previewer, coder
 
 def main():
-    # declare global variables
+	# declare global variables
 
-    # init
+	# init
 	rclpy.init()
 	preview, model = model_init() 
 	base_motion = BASEMOTION()
+	query = QUERY()
 	# history stored in format of [input_text, result]
 	# max length of query history is 10
 	query_history = {0: ["", ""]}
@@ -51,32 +75,23 @@ def main():
 	action_history_max_len = 20
 	action_history_idx = 0
 
-	# test
-	# test_llm = LMP("test", get_config('configs/config.yaml')['lmps']['test'])
-	# while True:
-	# 	# if True:
-	# 	input_text = input("\n>>Prompt: ")
-	# 	if input_text == 'exit':
-	# 		break
-	# 	success = False
-	# 	while not success:
-	# 		result, success = test_llm(input_text)
-	# 		result, success = model(result)
-	# 		print(result)
-
-
 	while True:
 		input_text = input("\n>>Prompt: ")
 		if input_text == 'exit':
 			break
+		if input_text in ['stop', 'Stop', 'STOP', 'break', 'Break', 'BREAK', 'exit', 'Exit', 'EXIT']:
+			query.publish_cmd("stop")
+			continue
+  
+		# Main loop
 		success = False
 		while not success:
 			# result, success = preview(input_text)  
 			# model_input = f'Last operation:\nQuery:{query_history[query_history_idx][0]}\nResult:{query_history[query_history_idx][1]}\n\nCurrent operation: {input_text}\n{result}'
 			# model_input = f'Query:{input_text}\nPossible explaination:{result}'
 			model_input = f'Query: {input_text}'
-			print("*"*80)
-			print(model_input)
+			# print("*"*80)
+			# print(model_input)
 			print("*"*80)
 			result, success = model(model_input)
 			print(result)
@@ -84,10 +99,9 @@ def main():
 			# input()
 			# continue
 			if success:
-				query_history_idx = (query_history_idx + 1) % query_history_max_len
-				query_history[query_history_idx] = [input_text, result]
-				base_motion.run(result)
-			print("result: ",result)
+				# query_history_idx = (query_history_idx + 1) % query_history_max_len
+				# query_history[query_history_idx] = [input_text, result]
+				query.publish_cmd(result)
 
 	rclpy.shutdown()
  

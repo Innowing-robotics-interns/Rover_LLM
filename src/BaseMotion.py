@@ -2,34 +2,40 @@ import rclpy
 from rclpy.node import Node
 from nav_msgs.msg import Odometry, Path
 from geometry_msgs.msg import PointStamped, Twist, Point
-from utils import to_euler, angle_calculation, value_CLIP, value_NORM
+from capllm.utils import to_euler, angle_calculation, value_CLIP, value_NORM
 import math
-from std_msgs.msg import Bool
-import string
+from std_msgs.msg import Bool, String
+import subprocess
 
 PI = math.pi
 ANGLE_THRESHOLD = 0.09
+MAX_OMEGA = 0.6
 
-class Position_Receiver(Node):
+# Node for communication with Rover system
+class Rover(Node):
     def __init__(self):
-        super().__init__('position_receiver')
+        super().__init__('rover')
+        # Rover coordinates and orientation subscriber
         self.odom_sub = self.create_subscription(
             Odometry,
             'odom_baselink',
             self.odom_callback,
             10
         )
+        # Rover movement publisher
         self.point_pub = self.create_publisher(
             PointStamped,
             'clicked_point',
             10
         )
+        # Rover navigation reply subscriber
         self.nav_reply_sub = self.create_subscription(
             Bool,
             'dstar_arrive',
             self.nav_reply_callback,
             10
         )
+        # Rover vision detect subscriber
         self.vision_detect_sub = self.create_subscription(
             PointStamped,
             'detect_point',
@@ -70,13 +76,14 @@ class Position_Receiver(Node):
         point_msg = PointStamped()
         timer_period = 0.5
 
+        # get and limit angular velocity
         delta_theta = target_point[2] - self.current_pose[2]
         if delta_theta > PI:
             delta_theta -= 2*PI
         if delta_theta < -PI:
             delta_theta += 2*PI
         self.delta_theta = delta_theta
-        wz = value_CLIP((delta_theta / timer_period), -0.6, 0.6)
+        wz = value_CLIP((delta_theta / timer_period), -MAX_OMEGA, MAX_OMEGA)
 
         point_msg.point.x = target_point[0]
         point_msg.point.y = target_point[1]
@@ -85,61 +92,117 @@ class Position_Receiver(Node):
         self.point_pub.publish(point_msg)
 
 
-class BASEMOTION:
+class BASEMOTION(Node):
     def __init__(self):
-        self.position_receiver = Position_Receiver()
-        self.position_receiver.current_pose = [0, 0, 0]
-        self.position_receiver.current_orientation = [0, 0, 0, 0]
+        super().__init__('BaseMotion')
+        # Rover command from LLM subscriber 
+        self.query_sub = self.create_subscription(
+            String,
+            'query',
+            self.query_callback,
+            10
+        )
+        # Rover response to LLM publishers
+        self.response_pub = self.create_publisher(
+            String,
+            'response',
+            10
+        )
+        
+        self.rover = Rover()
+        self.rover.current_pose = [0, 0, 0]
+        self.rover.current_orientation = [0, 0, 0, 0]
         self.position_now = [0, 0, 0]
         self.command_map = {
-            0: lambda command: stop(command, self.position_receiver),
-            1: lambda command: go_Xaxis(command, self.position_receiver),
-            2: lambda command: go_Yaxis(command, self.position_receiver),
-            3: lambda command: go_to_point(command, self.position_receiver),
-            4: lambda command: circle(command, self.position_receiver),
-            5: lambda command: setMark(command, self.position_receiver),
-            6: lambda command: turn(command, self.position_receiver),
+            0: lambda command: stop(command, self.rover),
+            1: lambda command: go_Xaxis(command, self.rover),
+            2: lambda command: go_Yaxis(command, self.rover),
+            3: lambda command: go_to_point(command, self.rover),
+            4: lambda command: circle(command, self.rover),
+            5: lambda command: setMark(command, self.rover),
+            6: lambda command: turn(command, self.rover),
+            20: lambda command: Detect(command),
         }   
+        self.force_stop = False
+        self.incomming_cmd = False
 
-    def run(self, cmd):
+
+    def query_callback(self, msg):
+        # self.get_logger().info(f'cmd: {msg.data}')
+        self.cmd = msg.data
+        print("cmd: ",self.cmd)
+        if self.cmd in ['stop', 'Stop', 'STOP', 'break', 'Break', 'BREAK', 'exit', 'Exit', 'EXIT']:
+            self.force_stop = True
+            # self.rover.publish_point(self.rover.current_pose)
+            print("Force stop...")
+            return
+        self.incomming_cmd = True
+
+    def publish_response(self, response):
+        msg = String()
+        msg.data = response
+        self.response_pub.publish(msg)
+
+    # Execute the command
+    def exec_cmd(self):
         path = []
         cnt = 0
-        cmd = eval(cmd)
-        print("cmd: ",cmd)
+        self.cmd = eval(self.cmd)
         # single action
-        for command in cmd:
+        for command in self.cmd:
+            # if (self.force_stop == True):
+            #     self.rover.publish_point(self.rover.current_pose)
+            #     self.force_stop = False
+            #     return
+            
             print("command: ",command)
             if command[0] in self.command_map:
                 if 0 < command[0] < 10:
                     path = self.command_map[command[0]](command[1:])
                     if command[0] == 5 and path[0].lower() != 'ff':
                         print('set mark:', path)
-                        self.position_receiver.LocationLibrary[path[0]] = path[1]
+                        self.rover.LocationLibrary[path[0]] = path[1]
                         continue
-            # print("path: ",path)
+                if 20 <= command[0] < 30:
+                    self.command_map[command[0]](command[1])
+                    continue
+            # print("path: ",path) # debug purpose
             if len(path) > 0:
                 for target_point in path:
-                    rclpy.spin_once(self.position_receiver)
-                    self.position_receiver.last_pose = self.position_receiver.current_pose
-                    self.position_receiver.nav_arrived = False
+                    # rclpy.spin_once(self.rover)
+                    self.rover.last_pose = self.rover.current_pose
+                    self.rover.nav_arrived = False
                     print("Ready to move...")
+                    self.publish_response("Ready to move...")
                     # continue # debug purpose
-                    while (self.position_receiver.nav_arrived == False) or (self.position_receiver.delta_theta > ANGLE_THRESHOLD or self.position_receiver.delta_theta < -ANGLE_THRESHOLD):
-                        # print("nav_arrived1: ", self.position_receiver.nav_arrived)
-                        rclpy.spin_once(self.position_receiver)
-                        self.pose_now = self.position_receiver.current_pose
-                        # print("target: ", target_point, "current: ", self.pose_now)
-                        # print("delta_theta: ", self.position_receiver.delta_theta)
-                        # print("nav_arrived: ", self.position_receiver.nav_arrived)
-                        # input()
-                        self.position_receiver.publish_point(target_point)
-                        
-                    # if (self.position_receiver.nav_arrived == True):
-                    #     cnt += 1
-                    # print(cnt)
-                    self.position_receiver.facing_flag = False
-                    self.position_receiver.facing_point = None
-                    self.position_receiver.nav_arrived = False
+                    while (self.rover.nav_arrived == False) or (self.rover.delta_theta > ANGLE_THRESHOLD or self.rover.delta_theta < -ANGLE_THRESHOLD):
+                        print(cnt)
+                        cnt+=1
+                        # rclpy.spin_once(self.rover)
+                        rclpy.spin_once(self, timeout_sec=0.01)
+                        self.pose_now = self.rover.current_pose
+                        print("target: ", target_point, "current: ", self.pose_now)
+                        if (self.force_stop == True):
+                            self.rover.publish_point(self.rover.current_pose)
+                            print("Force stop...")
+                            # break
+                            return # TBD which is better
+                        else:
+                            self.rover.publish_point(target_point)
+                    self.rover.facing_flag = False
+                    self.rover.facing_point = None
+                    self.rover.nav_arrived = False
+
+    # Main loop
+    def run(self):
+        while rclpy.ok():
+            rclpy.spin_once(self)
+            if self.incomming_cmd == False:
+                continue
+            
+            self.exec_cmd()
+            self.force_stop = False
+            self.incomming_cmd = False
 
                         
 
@@ -150,7 +213,7 @@ def go_Xaxis(cmd, cmd_node):
     x_f          = cmd[2]
     y_f          = cmd[3]
     point        = []
-    rclpy.spin_once(cmd_node)
+    # rclpy.spin_once(cmd_node)
     position     = cmd_node.current_pose
     euler = position[2]
     if dis == '+FF':
@@ -329,17 +392,20 @@ def turn(cmd, cmd_node):
     point.append(position)
     return point
 
-
-
-# test
+# vision detection cmd
+def Detect(target):
+    format = f"ros2 topic pub /input_query std_msgs/String '{target}'"
+    print(format)
+    subprocess.run(format, capture_output=True, text=True, shell=True)
+    return 
+    
 def main(args=None):
     rclpy.init(args=args)
-    position_receiver = Position_Receiver()
-    test = BASEMOTION()
-    # rclpy.spin(position_receiver)
-    test_path = [[2, 1, 'FF', 'FF', 'FF']]
-    test.run(str(test_path))
-    position_receiver.destroy_node()
+    # rover = Rover()
+    BaseMotion = BASEMOTION()
+    BaseMotion.run()
+    # rclpy.spin(BaseMotion)
+    BaseMotion.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':

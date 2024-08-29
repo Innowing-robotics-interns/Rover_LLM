@@ -4,15 +4,15 @@ import torch
 import re
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel
-from utils import get_path, load_prompt
+from capllm.utils import get_path, load_prompt
 from dotenv import load_dotenv
 import os
 import openai
 from openai import AzureOpenAI
 
-OPENAI_API_KEY      = "Enter your API key here"
-OPENAI_API_ENDPOINT = "Enter the endpoint here"
-OPENAI_API_VERSION  = "Enter the version here"
+OPENAI_API_KEY      = ""
+OPENAI_API_ENDPOINT = ""
+OPENAI_API_VERSION  = ""
 
 class LMP:
     def __init__(self, name, cfg, fixed_vars={}, variable_vars={}):
@@ -24,7 +24,7 @@ class LMP:
         self.variable_vars = variable_vars
         self.load_model()
     
-    
+    # get the configuration
     def config(self):
         if 'gpt' in self.cfg['model'] :
             load_dotenv()
@@ -39,14 +39,16 @@ class LMP:
         self.sys_prompts = load_prompt(self.cfg['sys_prompts'])
         self.user_prompts = load_prompt(self.cfg['user_prompts'])
 
-
+    # format the chat template to be used in the model
     def format_chat_template(self, prompt, document=None):
+        # setting import libraries for lower level LLM
         if (self.variable_vars is None):
             custom_import = ''
         else:
             custom_import = f"from LLM_lib import {', '.join(self.variable_vars.keys())}"
         self.user_prompts = self.user_prompts.replace('{custom_import}', custom_import)
         
+        # setting the user and assistant prompts
         user1 = f"I would like you to help me write Python code to control a robot navigation operating in indoor environment. Please complete the code every time when I give you new query. Pay attention to appeared patterns in the given context code. Be thorough and thoughtful in your code. Do not include any import statement. Do not repeat my question. Do not provide any text explanation (comment in code is okay). I will first give you the context of the code below:\n\n```\n{self.user_prompts}\n```\n\nNote that in ROS2 axis, x is back to front with front is positive x, y is right to left with left is positive y, and z is bottom to up."
         assistant1 = f'Got it. I will complete what you give me next and output the code in plain text only without code block.'
         if (self.cfg['heirarchy'] == 'preview'):
@@ -59,6 +61,8 @@ class LMP:
             {"role": "assistant", "content": assistant1},
             {"role": "user",   "content": prompt+'\n'},
         ]
+        
+        # different return for gpt / Llama model
         if 'gpt' in self.cfg['model']:
             return messages
         
@@ -70,7 +74,7 @@ class LMP:
         ).to("cuda")
         return input_ids
 
-
+    # format the code to be executed using subprocess & exec()
     def code_formatting(self, code):
         if self.cfg['heirarchy'] == 'low': # lower level LLM
             code_prefix = f"import {', '.join(self.fixed_vars.keys())}"+ f"\ncommands = ['source ~/interbotix_ws/install/setup.bash', '''{code}''']\n"
@@ -80,7 +84,7 @@ class LMP:
         code_suffix = f"for command in commands:\n\tresult = subprocess.run(command, shell=True, executable='/bin/bash', capture_output=True, text=True)"
         return code_prefix + code_suffix
 
-
+    # generate the output from the model
     def generate(self, input_ids):
         try:
             if 'gpt' in self.cfg['model']:
@@ -91,33 +95,18 @@ class LMP:
                     max_tokens=self.cfg['max_new_tokens'], 
                     n=1)
                 result = chat_completion.choices[0].message.content
-                # print("**"*80)
-                # print(result)
-                # print("**"*80)
-                # pattern = r'```python\n(.*)```'
-                # final = re.findall(pattern, result, re.DOTALL)[-1]
                 final = result
             else:
                 self.model.eval()
                 with torch.no_grad():
                     result = self.tokenizer.decode(self.model.generate(inputs=input_ids, max_new_tokens=self.cfg['max_new_tokens'], pad_token_id=self.tokenizer.eos_token_id)[0], skip_special_tokens=True)
-                    # result = self.tokenizer.decode(self.model.generate(**input_ids, max_new_tokens=1000, pad_token_id=self.tokenizer.eos_token_id)[0], skip_special_tokens=True)
             
                 # Define regular expression pattern to extract the behavior tree from the complete output
                 # depends on the prompt
-                # pattern = r'assistant(.*?)# done' 
                 pattern = r'assistant\n(.*)'
                 matches = re.findall(pattern, result, re.DOTALL)
-                # print("="*80)
-                # print(result)
-                # print("="*80)
-                # print(matches[-1])
-                # print("="*80)
                 final = re.findall(r'assistant(.*)', matches[-1], re.DOTALL)[-1]
             
-            # print(final)
-            # print(type(final))
-            # print("="*80)
             
             # special case
             if not final:
@@ -139,7 +128,7 @@ class LMP:
         
         return final, success
     
-    
+    # load the model
     def load_model(self):
         # config
         self.config()
@@ -150,7 +139,7 @@ class LMP:
                 api_version = OPENAI_API_VERSION,
                 )
             return
-        else:
+        else: # Llama model
             quantization_config = BitsAndBytesConfig(load_in_4bit=True) if self.cfg['load_in_4bit'] \
                                 else BitsAndBytesConfig(load_in_8bit=True)
             token = "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"
